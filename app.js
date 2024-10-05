@@ -15,5 +15,7 @@ conn.on("error", (err) => console.log("connection faild"));
 app.use(express.json());
 
 //routing
+app.use('/coupon', require('./routes/couponRoute'))
+app.use('/order',require('./routes/orderRoute'))
 
 module.exports = app;
