@@ -20,6 +20,6 @@ app.use("/card", require("./routes/cards.routes"));
 app.use("/category", require("./routes/category.routes"));
 app.use("/coupon", require("./routes/coupon.routes"));
 app.use("/order", require("./routes/order.routes"));
-
+app.use("/product", require("./routes/product.routes"));
 
 module.exports = app;

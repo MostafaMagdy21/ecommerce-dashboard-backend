@@ -1,4 +1,4 @@
-const Review = require('../model/review');
+const Review = require('../models/review');
 
 function createReview(req,res){}
 
