@@ -1,4 +1,4 @@
-const Categories = require("../models/categoryModel");
+const Categories = require("../models/category");
 
 function showSingleCategory(req, res) {}
 function showAllCategories(req, res) {}

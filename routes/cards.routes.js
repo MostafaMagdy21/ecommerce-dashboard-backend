@@ -4,7 +4,7 @@ const {
 	createCard,
 	updateCard,
 	getCard,
-} = require("../controllers/cardController");
+} = require("../controllers/card.controller");
 
 router.get("/:id", getCard);
 

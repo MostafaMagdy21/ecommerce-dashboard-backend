@@ -1,4 +1,4 @@
-const Product = require('../model/products');
+const Product = require('../model/product');
 
 function createProduct(req,res){}
 

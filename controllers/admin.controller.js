@@ -1,4 +1,4 @@
-const Admins = require("../models/adminModel");
+const Admins = require("../models/admin");
 
 function createAdmin(req, res) {}
 function deleteAdmin(req, res) {}

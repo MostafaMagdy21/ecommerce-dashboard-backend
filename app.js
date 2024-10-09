@@ -11,15 +11,15 @@ conn.once("open", () =>
 );
 conn.on("error", (err) => console.log("connection faild"));
 
-// meddlwares
+// middlewares
 app.use(express.json());
 
 //routing
-app.use("/admin", require("./routes/adminRoute"));
-app.use("/card", require("./routes/cardRoute"));
-app.use("/category", require("./routes/categoryRoute"));
+app.use("/admin", require("./routes/admins.routes"));
+app.use("/card", require("./routes/cards.routes"));
+app.use("/category", require("./routes/category.routes"));
+app.use("/coupon", require("./routes/coupon.routes"));
+app.use("/order", require("./routes/order.routes"));
 
-app.use("/coupon", require("./routes/couponRoute"));
-app.use("/order", require("./routes/orderRoute"));
 
 module.exports = app;

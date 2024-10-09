@@ -6,7 +6,7 @@ const {
 	getSingleAdmin,
 	getAllAdmins,
 	updateAdmin,
-} = require("../controllers/adminController");
+} = require("../controllers/admin.controller");
 
 router.get("/", getAllAdmins);
 router.get("/:id", getSingleAdmin);

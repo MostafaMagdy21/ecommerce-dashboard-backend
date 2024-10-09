@@ -6,7 +6,7 @@ const {
 	deleteCategory,
 	showAllCategories,
 	showSingleCategory,
-} = require("../controllers/categoryController");
+} = require("../controllers/category.controller");
 
 router.get("/", showAllCategories);
 router.get("/:id", showSingleCategory);
