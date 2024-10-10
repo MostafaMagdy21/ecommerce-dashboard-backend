@@ -1,11 +1,13 @@
 const express = require("express"),
   router = express.Router(),
-  shippingCostController = require("../controllers/shippingCost.controller");
+  controller = require("../controllers/shippingCost.controller"),
+  middleware = require("../middlewares/shippingCost.middleware");
 
-router.get("/", shippingCostController.index);
-router.get("/:id", shippingCostController.show);
-router.post("/", shippingCostController.store);
-router.put("/:id", shippingCostController.update);
-router.delete("/:id", shippingCostController.destroy);
+router.get("/", controller.index);
+router.get("/place", middleware.getShippingCostByPlace, controller.show);
+router.get("/:id", middleware.getShippingCostById, controller.show);
+router.post("/", controller.store);
+router.put("/:id", middleware.getShippingCostById, controller.update);
+router.delete("/:id", middleware.getShippingCostById, controller.destroy);
 
 module.exports = router;
