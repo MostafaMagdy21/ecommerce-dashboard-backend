@@ -134,6 +134,8 @@ function updateProduct(req, res) {
 }
 
 
+
+
 function deleteProduct(req, res) {
     const id = req.params.id;
 
@@ -141,7 +143,8 @@ function deleteProduct(req, res) {
         .then(result => {
             if (result) {
                 res.status(200).json({
-                    message: "Product Deleted Successfully"
+                    message: "Product Deleted Successfully",
+                    deleteProduct : result
                 });
             } else {
                 res.status(404).json({
