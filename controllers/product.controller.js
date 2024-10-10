@@ -22,8 +22,8 @@ function createProduct(req, res) {
         tags: req.body.tags || [], 
         rating: req.body.rating || null, 
         status: req.body.status,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        // createdAt: new Date(),
+        // updatedAt: new Date(),
         createdBy: req.body.createdBy || null 
     });
 
@@ -134,8 +134,6 @@ function updateProduct(req, res) {
 }
 
 
-
-
 function deleteProduct(req, res) {
     const id = req.params.id;
 
@@ -158,6 +156,8 @@ function deleteProduct(req, res) {
             });
         });
 }
+
+
 
 module.exports = {
     createProduct,

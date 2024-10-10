@@ -152,20 +152,24 @@ var products = new Schema({
     type: String,
     required: true
   },
-  createdAt: {
-    type: Date,
-  default: Date.now,
-  required: true
-  },
-  updatedAt: {
-    type: Date,
-  default: Date.now,
-  required: true
-  },
+  // createdAt: {
+  //   type: Date,
+  // default: Date.now,
+  // required: true
+  // },
+  // updatedAt: {
+  //   type: Date,
+  // default: Date.now,
+  // required: true
+  // },
   createdBy: {
     type: Schema.Types.ObjectId,
     required: false 
   }
-});
+},
+{ timestamps: true }
+
+
+);
 
 module.exports = mongoose.model('Product', products);
