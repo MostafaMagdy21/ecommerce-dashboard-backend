@@ -7,24 +7,22 @@ function createProduct(req, res) {
         title: req.body.title,
         price: {
             base: req.body.price.base,
-            discount: req.body.price.discount || null 
+            discount: req.body.price.discount 
         },
-        description: req.body.description || null, 
+        description: req.body.description, 
         images: req.body.images, 
-        categoryId: req.body.categoryId || null, 
+        categoryId: req.body.categoryId, 
         quantity: req.body.quantity,
         options: {
-            vitamens: req.body.options.vitamens || [], 
+            vitamins: req.body.options.vitamins || [], 
             size: req.body.options.size || [], 
             scent: req.body.options.scent || [], 
             gender: req.body.options.gender || [] 
         },
         tags: req.body.tags || [], 
-        rating: req.body.rating || null, 
+        rating: req.body.rating,
         status: req.body.status,
-        // createdAt: new Date(),
-        // updatedAt: new Date(),
-        createdBy: req.body.createdBy || null 
+        createdBy: req.body.createdBy
     });
 
     product.save()
@@ -38,7 +36,7 @@ function createProduct(req, res) {
         })
         .catch(err => {
             res.status(500).json({
-                error: err.message || "There is an erroe while creating product."
+                error: err.message
             });
         });
 }
@@ -65,7 +63,7 @@ function showSingleProduct(req, res) {
 
 function showAllProducts(req, res) {
     Product.find({})
-        .select('title _id') 
+        // .select('title _id') 
         .then(products => {
             if (products.length === 0) {
                 res.status(404).json({
@@ -90,49 +88,58 @@ function showAllProducts(req, res) {
 
 function updateProduct(req, res) {
     const id = req.params.id;
+
     const updatedData = {
-        sku: req.body.sku,
-        title: req.body.title,
+        sku: "",
+        title:"",
         price: {
-            base: req.body.price.base,
-            discount: req.body.price.discount || null
+            base: 0,
+            discount: 0
         },
-        description: req.body.description || null,
-        images: req.body.images,
-        categoryId: req.body.categoryId || null,
-        quantity: req.body.quantity,
+        description: "" ,
+        images: "",
+        categoryId: "" || null,
+        quantity: 0,
         options: {
-            vitamins: req.body.options.vitamins || [],
-            size: req.body.options.size || [],
-            scent: req.body.options.scent || [],
-            gender: req.body.options.gender || []
+            vitamins: "" || [],
+            size: ""|| [],
+            scent: "" || [],
+            gender:"" || []
         },
-        tags: req.body.tags || [],
-        rating: req.body.rating || null,
-        status: req.body.status,
-        updatedAt: new Date()
+        tags: ""|| [],
+        rating: "" || null,
+        status: "",
     };
 
-    Product.findByIdAndUpdate(id, updatedData, { new: true })
+for(const key in updatedData){
+
+updatedData[key]=req.body[key];
+
+}
+
+     Product.findByIdAndUpdate(id, updatedData, { new: true })
         .then(product => {
             if (product) {
-                res.status(200).json({
-                    message: "Product Updated Successfully",
-                    product: product
-                });
-            } else {
-                res.status(404).json({
+                     res.status(200).json({
+                        message: "Product Updated Successfully",
+                        product: product
+                    });
+               
+            }
+             else {
+            res.status(404).json({
                     message: "Error 404: Product Not Found"
                 });
             }
         })
         .catch(err => {
             res.status(500).json({
-                error: err.message || "There is an error for updating the product."
+                error: err.message ,
+                errorCode: err.code
             });
         });
+   
 }
-
 
 function deleteProduct(req, res) {
     const id = req.params.id;
