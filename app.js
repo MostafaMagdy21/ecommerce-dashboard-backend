@@ -23,5 +23,6 @@ app.use("/coupon", require("./routes/coupon.routes"));
 app.use("/order", require("./routes/order.routes"));
 app.use("/product", require("./routes/product.routes"));
 app.use("/shippingCost", require("./routes/shippingCost.routes"));
+app.use("/review", require("./routes/review.routes"))
 
 module.exports = app;
