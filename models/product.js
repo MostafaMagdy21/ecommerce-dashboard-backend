@@ -6,7 +6,7 @@ var products = new Schema(
   {
      sku: { type: String, required: true },
 
-    title: { type: String, required: true },
+     title: { type: String, required: true },
 
       price: {
       base: { type: Number, required: true },

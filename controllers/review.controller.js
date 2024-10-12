@@ -117,8 +117,6 @@ function showByProductId(req,res){
 
 }
 
-
-
 function updateReview(req,res){
     const id = req.params.id;
     const updatedData = {
