@@ -1,53 +1,48 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-var couponCode = new Schema({
-
+const couponCodeSchema = new Schema({
   couponCodeName: {
     type: String,
-    required: true
-},
-
-  discount: {
-    type: String,
-    required: true
+    required: true,
   },
-
+  discount: {
+    type: Number,
+    required: true,
+  },
   discountStatus: {
     type: String,
-    required: true
+    required: true,
   },
-
   originalPrice: {
     type: Number,
-    required: true
+    required: true,
   },
-
   finalPrice: {
     type: Number,
-    required: true
+    required: true,
   },
-
   startDate: {
     type: Date,
-    required: true
+    required: true,
   },
-
   endDate: {
     type: Date,
-    required: true
+    required: true,
   },
-
   createdAt: {
     type: Date,
-    required: true
+    default: Date.now,
   },
-
   updatedAt: {
     type: Date,
-    required: true
-  }
+    default: Date.now,
+  },
 });
 
+couponCodeSchema.pre("save", function (next) {
+  this.updatedAt = Date.now();
+  next();
+});
 
-module.exports = mongoose.model('CouponCode', couponCode);
+module.exports = mongoose.model("CouponCode", couponCodeSchema);

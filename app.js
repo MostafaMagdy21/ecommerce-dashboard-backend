@@ -10,7 +10,7 @@ const conn = mongoose.connection;
 conn.once("open", () =>
   console.log(`Database Connected Successfully At Link ${process.env.DB_URL}`)
 );
-conn.on("error", (err) => console.log("connection faild"));
+conn.on("error", (err) => console.log("connection failed"));
 
 // middlewares
 app.use(express.json());
