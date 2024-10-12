@@ -1,4 +1,5 @@
 const CouponCode = require("../models/couponCode");
+const mongoose = require("mongoose");
 
 // Create a new coupon code
 async function createCoupon(req, res) {
@@ -45,6 +46,10 @@ async function createCoupon(req, res) {
 async function getSingleCoupon(req, res) {
   const { id } = req.params;
 
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid coupon code ID" });
+  }
+
   try {
     const couponCode = await CouponCode.findById(id);
     if (!couponCode)
@@ -55,11 +60,23 @@ async function getSingleCoupon(req, res) {
   }
 }
 
-// Get all coupon codes
+// Get all coupon codes with pagination
 async function getAllCoupon(req, res) {
+  const { page = 1, limit = 10 } = req.query;
+
   try {
-    const couponCodes = await CouponCode.find();
-    res.status(200).json(couponCodes);
+    const couponCodes = await CouponCode.find()
+      .limit(limit)
+      .skip((page - 1) * limit);
+
+    const totalItems = await CouponCode.countDocuments();
+
+    res.status(200).json({
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: page,
+      couponCodes,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -77,6 +94,10 @@ async function updateCoupon(req, res) {
     startDate,
     endDate,
   } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid coupon code ID" });
+  }
 
   try {
     const couponCode = await CouponCode.findById(id);
@@ -101,6 +122,10 @@ async function updateCoupon(req, res) {
 // Delete a coupon code
 async function deleteCoupon(req, res) {
   const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid coupon code ID" });
+  }
 
   try {
     const couponCode = await CouponCode.findByIdAndDelete(id);
