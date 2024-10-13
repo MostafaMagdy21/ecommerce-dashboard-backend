@@ -38,20 +38,12 @@ function index(req, res) {
 }
 
 function show(req, res) {
-  if (res.user) {
-    return res.status(200).json({
-      message: "user retrieved successfully!",
-      method: req.method,
-      url: req.originalUrl,
-      user: res.user,
-    });
-  } else {
-    return res.status(404).json({
-      message: res.message,
-      method: req.method,
-      url: req.originalUrl,
-    });
-  }
+  return res.status(200).json({
+    message: "user retrieved successfully!",
+    method: req.method,
+    url: req.originalUrl,
+    user: res.user,
+  });
 }
 
 function register(req, res) {
@@ -72,19 +64,34 @@ function register(req, res) {
       password: hashedPassword,
     });
 
-    user.save().then((u) => {
-      return res.status(201).json({
-        message: "User Registered Successfully",
-        user: u,
+    user
+      .save()
+      .then(() => {
+        return res.status(201).json({
+          message: "User Registered Successfully",
+        });
+      })
+      .catch((err) => {
+        if (err.code == 11000) {
+          return res.status(409).json({
+            message: "email already exists, try loging in instead",
+            errorCode: err.code,
+            errorMessage: err.message,
+          });
+        }
+        return res.status(500).json({
+          message: "server error",
+          errorCode: err.code,
+          errorMessage: err.message,
+        });
       });
-    });
   });
 }
 
 function updateData(req, res) {
-  if (res.user) {
+  if (res.user._id == res.userId) {
     const { fname, lname, birthDay, gender, address, phone } = req.body;
-    const profileImage = req.file.path;
+    const profileImage = req.file?.path;
 
     const userFields = {
       fname,
@@ -96,14 +103,24 @@ function updateData(req, res) {
       profileImage,
     };
 
+    Object.keys(userFields).forEach(
+      (key) => userFields[key] === undefined && delete userFields[key]
+    );
+
+    if (Object.keys(userFields).length == 0) {
+      return res.status(400).json({
+        message: "no data provided.. please add the data you want to add",
+      });
+    }
+
     User.updateOne(res.user, userFields).then(() => {
       return res.status(200).json({
         message: "User Updated Successfully",
       });
     });
   } else {
-    return res.status(404).json({
-      message: res.message,
+    return res.status(403).json({
+      message: "You're not authorized to make this change!",
       method: req.method,
       url: req.originalUrl,
     });
@@ -111,33 +128,84 @@ function updateData(req, res) {
 }
 
 function deleteAccount(req, res) {
-  if (res.user) {
+  if (res.user._id == res.userId) {
     User.updateOne(res.user, { accountStatus: "deleted" }).then(() => {
       return res.status(200).json({
         message: "User account status set to deleted successfully",
       });
     });
   } else {
-    return res.status(404).json({
-      message: res.message,
+    return res.status(403).json({
+      message: "You're not authorized to make this change!",
       method: req.method,
       url: req.originalUrl,
     });
   }
 }
 
-function changePassword(req, res) {}
+async function changePassword(req, res) {
+  if (res.user._id == res.userId) {
+    const { oldPassword, newPassword } = req.body;
+    const userPassword = await User.findOne(res.user._id).then(
+      (user) => user.password
+    );
+
+    bcrypt
+      .compare(oldPassword, userPassword)
+      .then((isIdentical) => {
+        if (isIdentical) {
+          const hashedPassword = bcrypt.hashSync(newPassword, 10);
+          User.updateOne(
+            { _id: res.user._id },
+            { password: hashedPassword }
+          ).then(() => {
+            res.status(201).json({
+              message: "Password updated successfully!",
+            });
+          });
+        } else {
+          res.status(400).json({
+            message: "Your old password is incorrect!",
+          });
+        }
+      })
+      .catch((err) => {
+        return res.status(400).json({
+          message: "please provide the old and the new password!",
+          errorCode: err.code,
+          errorMessage: err.message,
+        });
+      });
+  } else {
+    return res.status(403).json({
+      message: "You're not authorized to make this change!",
+      method: req.method,
+      url: req.originalUrl,
+    });
+  }
+}
 
 async function login(req, res) {
-  if (res.user) {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email: email });
+  const { email, password } = req.body;
+  const user = await User.findOne({ email: email });
 
-    bcrypt.compare(password, user.password).then((isIdentical) => {
+  bcrypt
+    .compare(password, user.password)
+    .then((isIdentical) => {
       if (isIdentical) {
         const token = jwt.sign({ userId: user._id }, process.env.AUTH_SECRET);
         res.header("Authorization", `Bearer ${token}`);
-        console.log(res.header["Authorization"]);
+
+        User.updateOne({ _id: user._id }, { lastLoginDate: new Date() }).catch(
+          (err) => {
+            return res.status(500).json({
+              message: `something went wrong!`,
+              errorCode: err.code,
+              errorMessage: err.message,
+            });
+          }
+        );
+
         return res.status(200).json({
           message: `Welcome back ${user.fname}!`,
         });
@@ -146,14 +214,14 @@ async function login(req, res) {
           message: "Wrong email or password",
         });
       }
+    })
+    .catch((err) => {
+      return res.status(400).json({
+        message: "please provide the email and password!",
+        errorCode: err.code,
+        errorMessage: err.message,
+      });
     });
-  } else {
-    return res.status(404).json({
-      message: res.message,
-      method: req.method,
-      url: req.originalUrl,
-    });
-  }
 }
 
 // function signout(req, res) {

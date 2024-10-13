@@ -2,7 +2,10 @@ const express = require("express"),
   router = express.Router(),
   controller = require("../controllers/user.controller"),
   middleware = require("../middlewares/user.middleware"),
-  authMiddleware = require("../middlewares/auth.middleware");
+  {
+    authenticateAdminToken,
+    authenticateUserToken,
+  } = require("../middlewares/auth.middleware");
 
 router.get("/", controller.index);
 router.get("/email", middleware.getUserByEmail, controller.show);
@@ -14,16 +17,21 @@ router.post("/login", middleware.getUserByEmail, controller.login);
 
 router.put(
   "/deleteAccount/:id",
+  authenticateUserToken,
   middleware.getUserById,
   controller.deleteAccount
 );
-// router.put(
-//   "/changePassword/:id",
-//   middleware.getUserById,
-//   controller.deleteAccount
-// );
+
+router.put(
+  "/changePassword/:id",
+  authenticateUserToken,
+  middleware.getUserById,
+  controller.changePassword
+);
+
 router.put(
   "/:id",
+  authenticateUserToken,
   middleware.getUserById,
   middleware.upload.single("profileImage"),
   controller.updateData

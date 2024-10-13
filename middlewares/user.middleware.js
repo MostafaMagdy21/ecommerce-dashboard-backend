@@ -9,9 +9,16 @@ function getUserById(req, res, next) {
       "fname lname email birthDay gender phone address profileImage latestOrderId lastLoginDate accountStatus"
     )
     .then((user) => {
-      if (user) res.user = user;
-      else res.message = "User not found!";
-      next();
+      if (user) {
+        res.user = user;
+        next();
+      } else {
+        return res.status(404).json({
+          message: "User not Found!",
+          method: req.method,
+          url: req.originalUrl,
+        });
+      }
     })
     .catch((err) => {
       res.status(500).json({
@@ -30,9 +37,16 @@ function getUserByEmail(req, res, next) {
       "fname lname email birthDay gender address phone profileImage latestOrderId lastLoginDate accountStatus"
     )
     .then((user) => {
-      if (user) res.user = user;
-      else res.message = "User not found!";
-      next();
+      if (user) {
+        res.user = user;
+        next();
+      } else {
+        return res.status(404).json({
+          message: "User not Found!",
+          method: req.method,
+          url: req.originalUrl,
+        });
+      }
     })
     .catch((err) => {
       console.log(err);
@@ -60,7 +74,6 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  console.log(file);
   if (file.mimetype == "image/png" || file.mimetype == "image/jpg") {
     cb(null, true);
   } else {
