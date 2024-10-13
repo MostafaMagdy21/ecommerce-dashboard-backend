@@ -5,13 +5,17 @@ var reviews = new Schema({
   productId: { 
     type: Schema.Types.ObjectId,
     ref:"Product",
-    required: true},
+    required: true,
+    immutable: true
+  },
 
   customerId: {
     
     type: Schema.Types.ObjectId,
     ref:"User",
-    required: false},
+    required: false,
+  immutable: true
+  },
 
 
   rating: { type: Number, required: true },
