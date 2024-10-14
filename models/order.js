@@ -1,102 +1,20 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var order = new Schema({
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-  customerId: 
-  {
-    type: Schema.Types.ObjectId,
-    required: true
-  },
-  paymentId:
-   {
-    type: Schema.Types.ObjectId,
-    required: true
-  },
-  cartId: 
-  {
-    type: Schema.Types.ObjectId,
-    required: true
-  },
-  status: 
-  {
-    type: String,
-    required: true
-  },
-  currency: 
-  {
-    type: String,
-    required: true
-  },
-  total: {
-    type: String,
-    required: true
-  },
-  items: [{
-    productId: {
-      type: Schema.Types.ObjectId,
-      required: true
-    },
-    quantity: {
-      type: Number,
-      required: true
-    },
-    price: {
-      type: String,
-      required: true
-    },
-    total: {
-      type: String,
-      required: true
-    },
-    required: true
-  }],
-  shipping:
-   {
-    address: {
-      street1: {
-        type: String,
-        required: true
-      },
-      street2: {
-        type: String
-      },
-      city: {
-        type: String,
-        required: true
-      },
-      state: {
-        type: String,
-        required: true
-      },
-      zip: {
-        type: String,
-        required: true
-      },
-      country: {
-        type: String,
-        required: true
-      },
-      required: true
-    },
-    carrier: {
-      type: String
-    },
-    tracking: {
-      type: String
-    },
-    required: true
-  },
+const order = new Schema(
+	{
+		cart: { type: Schema.Types.ObjectId, ref: "Cart", required: true },
+		shipping: {
+			type: Schema.Types.ObjectId,
+			ref: "ShippingCost",
+			required: false,
+		},
+		totalPrice: { type: String, required: true },
+		status: { type: String, default: "under testing" },
+	},
+	{
+		timestamps: true,
+	}
+);
 
-  createdAt: 
-  {
-    type: Date,
-    required: true
-  },
-  updatedAt:
-   {
-    type: Date,
-    required: true
-  }
-});
-
-module.exports= mongoose.model('Order', order);
+module.exports = mongoose.model("order", order);
