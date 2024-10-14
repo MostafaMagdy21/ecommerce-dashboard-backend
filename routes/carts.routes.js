@@ -13,6 +13,9 @@ router.delete(
   "/remove/:productId/:userId",
   cartController.removeSingleProductFromCart);
 
+// Remove multiple products from the cart
+router.delete('/removeMultiple/:userId', cartController.removeMultipleProductsFromCart);
+
 // Get cart items for a specific user
 router.get('/:userId', cartController.getCart);
 

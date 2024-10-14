@@ -220,6 +220,70 @@ async function removeSingleProductFromCart(req, res) {
   }
 }
 
+// Remove multiple products from the cart
+async function removeMultipleProductsFromCart(req, res) {
+  const { userId } = req.params;
+  const { productIds } = req.body; // Expecting an array of product IDs in the request body
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid user ID" });
+  }
+
+  if (!Array.isArray(productIds) || productIds.length === 0) {
+    return res.status(400).json({ message: "Product IDs must be an array and cannot be empty" });
+  }
+
+  try {
+    // Find the cart for the specific user
+    const cart = await Cart.findOne({ userId });
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    // Store product quantities to restore stock later
+    const productsToRestore = [];
+
+    // Iterate over productIds and remove from cart
+    for (const productId of productIds) {
+      if (!mongoose.Types.ObjectId.isValid(productId)) {
+        return res.status(400).json({ message: `Invalid product ID: ${productId}` });
+      }
+
+      // Find the index of the product in the cart's products array
+      const productIndex = cart.products.findIndex((p) => p.productId.toString() === productId);
+      
+      if (productIndex !== -1) {
+        // Add the quantity to restore stock
+        productsToRestore.push(cart.products[productIndex]);
+
+        // Remove the product from the cart's products array
+        cart.products.splice(productIndex, 1);
+      }
+    }
+
+    // Restore stock for each product that was removed
+    for (const item of productsToRestore) {
+      const product = await Product.findById(item.productId);
+      if (product) {
+        product.quantity += item.quantity; // Restore the stock
+        await product.save();
+      }
+    }
+
+    // Save the updated cart
+    await cart.save();
+
+    // If no products remain in the cart, consider deleting the cart or keeping it empty
+    if (cart.products.length === 0) {
+      await Cart.findOneAndDelete({ userId });
+      return res.status(200).json({ message: "All products removed, cart deleted" });
+    }
+
+    res.status(200).json({ message: "Products removed from cart", cart });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
 
 
 // Get cart items for a specific user
@@ -273,6 +337,7 @@ module.exports = {
   addToCart,
   updateCart,
   removeSingleProductFromCart,
+  removeMultipleProductsFromCart,
   getCart,
   clearCart,
 };
