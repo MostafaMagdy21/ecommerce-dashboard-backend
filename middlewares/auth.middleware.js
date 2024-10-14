@@ -34,6 +34,7 @@ function authenticateAdminToken(req, res, next) {
         });
       } else {
         res.adminId = admin.adminId;
+        res.role = admin.role;
         next();
       }
     });
