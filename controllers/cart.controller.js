@@ -4,6 +4,8 @@ const User = require("../models/user");
 const CouponCode = require("../models/couponCode");
 const mongoose = require("mongoose");
 
+
+
 async function addToCart(req, res) {
   const { productId, userId, couponCodeId, quantity } = req.body;
 
@@ -109,16 +111,14 @@ async function addToCart(req, res) {
 // Update cart item
 async function updateCart(req, res) {
   const { cartId } = req.params;
-  const { quantity, price, couponCodeId } = req.body;
+  const { quantity, couponCodeId } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(cartId)) {
     return res.status(400).json({ message: "Invalid cart ID" });
   }
 
-  if (!quantity || !price || quantity <= 0 || price <= 0) {
-    return res
-      .status(400)
-      .json({ message: "Quantity and price must be positive" });
+  if (!quantity || quantity <= 0) {
+    return res.status(400).json({ message: "Quantity must be positive" });
   }
 
   try {
@@ -132,6 +132,9 @@ async function updateCart(req, res) {
         .json({ message: "Product not available or insufficient stock" });
     }
 
+    // Use discount price if available, otherwise use base price
+    const price =
+      product.price.discount > 0 ? product.price.discount : product.price.base;
     let total = quantity * price;
 
     if (couponCodeId) {
@@ -167,28 +170,56 @@ async function updateCart(req, res) {
   }
 }
 
-// Remove item from cart by productId and userId
-async function removeFromCart(req, res) {
-  const { productId, userId } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(productId) || !mongoose.Types.ObjectId.isValid(userId)) {
-    return res.status(400).json({ message: "Invalid product or user ID" });
+// Remove one product from the cart's products array
+async function removeSingleProductFromCart(req, res) {
+  const { userId, productId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(productId)) {
+    return res.status(400).json({ message: "Invalid user ID or product ID" });
   }
 
   try {
-    const cart = await Cart.findOneAndDelete({ productId, userId });
-    if (!cart) return res.status(404).json({ message: "Cart item not found" });
+    // Find the cart for the specific user
+    const cart = await Cart.findOne({ userId });
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
 
-    // Restore product stock when item is removed
+    // Find the index of the product in the cart's products array
+    const productIndex = cart.products.findIndex((p) => p.productId.toString() === productId);
+    
+    if (productIndex === -1) {
+      return res.status(404).json({ message: "Product not found in cart" });
+    }
+
+    // Get the product details to restore stock (if applicable)
     const product = await Product.findById(productId);
-    product.quantity += cart.quantity;
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Restore the product's stock (if you have a stock management system)
+    product.quantity += cart.products[productIndex].quantity;
     await product.save();
 
-    res.status(200).json({ message: "Item removed from cart" });
+    // Remove the product from the cart's products array
+    cart.products.splice(productIndex, 1);
+
+    // If no products remain in the cart, consider deleting the cart or keeping it empty
+    if (cart.products.length === 0) {
+      await Cart.findOneAndDelete({ userId });
+      return res.status(200).json({ message: "Product removed and cart deleted" });
+    } else {
+      await cart.save();
+    }
+
+    res.status(200).json({ message: "Product removed from cart", cart });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
+
 
 
 // Get cart items for a specific user
@@ -201,14 +232,15 @@ async function getCart(req, res) {
 
   try {
     const cartItems = await Cart.find({ userId })
-      .populate("productId")
-      .populate("couponCodeId");
+      .populate("products.productId")
+      .populate("products.couponCodeId");
 
     res.status(200).json(cartItems);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
+
 
 // Clear entire cart for a user
 async function clearCart(req, res) {
@@ -240,7 +272,7 @@ async function clearCart(req, res) {
 module.exports = {
   addToCart,
   updateCart,
-  removeFromCart,
+  removeSingleProductFromCart,
   getCart,
   clearCart,
 };
