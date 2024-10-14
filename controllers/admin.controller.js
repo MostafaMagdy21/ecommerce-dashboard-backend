@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 function index(req, res) {
+  // if (res.role == "owner") {
   Admin.find({})
     .select("name email role")
     .then((admins) => {
@@ -33,18 +34,34 @@ function index(req, res) {
         errorMessage: err.message,
       });
     });
+  // } else {
+  //   return res.status(403).json({
+  //     message: "You're not authorized to make this change!",
+  //     method: req.method,
+  //     url: req.originalUrl,
+  //   });
+  // }
 }
 
 function show(req, res) {
+  // if (res.role == "owner") {
   return res.status(200).json({
     message: "admin retrieved successfully!",
     method: req.method,
     url: req.originalUrl,
     admin: res.admin,
   });
+  // } else {
+  //   return res.status(403).json({
+  //     message: "You're not authorized to make this change!",
+  //     method: req.method,
+  //     url: req.originalUrl,
+  //   });
+  // }
 }
 
 function addNewAdmin(req, res) {
+  // if (res.role=="owner") {
   const { email, password, name } = req.body;
 
   if (!password || !email || !name) {
@@ -65,6 +82,54 @@ function addNewAdmin(req, res) {
       .then(() => {
         return res.status(201).json({
           message: "Admin Registered Successfully",
+        });
+      })
+      .catch((err) => {
+        if (err.code == 11000) {
+          return res.status(409).json({
+            message: "email already exists, try loging in instead",
+            errorCode: err.code,
+            errorMessage: err.message,
+          });
+        }
+        return res.status(500).json({
+          message: "server error",
+          errorCode: err.code,
+          errorMessage: err.message,
+        });
+      });
+  });
+  // } else {
+  //   return res.status(403).json({
+  //     message: "You're not authorized to make this change!",
+  //     method: req.method,
+  //     url: req.originalUrl,
+  //   });
+  // }
+}
+
+function createOwner(req, res) {
+  const { email, password, name } = req.body;
+
+  if (!password || !email || !name) {
+    return res.status(400).json({
+      message: "All fields are required",
+    });
+  }
+
+  bcrypt.hash(password, 10).then((hashedPassword) => {
+    const admin = new Admin({
+      email: email,
+      name: name,
+      role: "owner",
+      password: hashedPassword,
+    });
+
+    admin
+      .save()
+      .then(() => {
+        return res.status(201).json({
+          message: "Owner Created Successfully",
         });
       })
       .catch((err) => {
@@ -115,22 +180,20 @@ function updateData(req, res) {
   }
 }
 
-// TODO: add owner permission tp delete
-function deleteAccount(req, res) {
-  if (res.admin._id == res.adminId) {
-    console.log(res.admin);
-    Admin.updateOne(res.admin, { accountStatus: "deleted" }).then(() => {
-      return res.status(200).json({
-        message: "Admin account status set to deleted successfully",
-      });
+function setStatusToDeleted(req, res) {
+  // if (res.role == "owner") {
+  Admin.updateOne(res.admin, { accountStatus: "deleted" }).then(() => {
+    return res.status(200).json({
+      message: "Admin account status set to deleted successfully",
     });
-  } else {
-    return res.status(403).json({
-      message: "You're not authorized to make this change!",
-      method: req.method,
-      url: req.originalUrl,
-    });
-  }
+  });
+  // } else {
+  //   return res.status(403).json({
+  //     message: "You're not authorized to make this change!",
+  //     method: req.method,
+  //     url: req.originalUrl,
+  //   });
+  // }
 }
 
 async function changePassword(req, res) {
@@ -179,43 +242,49 @@ async function login(req, res) {
   const { email, password } = req.body;
   const admin = await Admin.findOne({ email: email });
 
-  bcrypt
-    .compare(password, admin.password)
-    .then((isIdentical) => {
-      if (isIdentical) {
-        const token = jwt.sign(
-          { adminId: admin._id, role: admin.role },
-          process.env.AUTH_SECRET
-        );
-        res.header("Authorization", `Bearer ${token}`);
-
-        Admin.updateOne(
-          { _id: admin._id },
-          { lastLoginDate: new Date() }
-        ).catch((err) => {
-          return res.status(500).json({
-            message: `something went wrong!`,
-            errorCode: err.code,
-            errorMessage: err.message,
-          });
-        });
-
-        return res.status(200).json({
-          message: `Welcome back ${admin.name}!`,
-        });
-      } else {
-        return res.status(400).json({
-          message: "Wrong email or password",
-        });
-      }
-    })
-    .catch((err) => {
-      return res.status(400).json({
-        message: "please provide the email and password!",
-        errorCode: err.code,
-        errorMessage: err.message,
-      });
+  if (admin.accountStatus == "deleted") {
+    return res.status(403).json({
+      message: "Forbidden access... your account is deleted",
     });
+  } else {
+    bcrypt
+      .compare(password, admin.password)
+      .then((isIdentical) => {
+        if (isIdentical) {
+          const token = jwt.sign(
+            { adminId: admin._id, role: admin.role },
+            process.env.AUTH_SECRET
+          );
+          res.header("Authorization", `Bearer ${token}`);
+
+          Admin.updateOne(
+            { _id: admin._id },
+            { lastLoginDate: new Date() }
+          ).catch((err) => {
+            return res.status(500).json({
+              message: `something went wrong!`,
+              errorCode: err.code,
+              errorMessage: err.message,
+            });
+          });
+
+          return res.status(200).json({
+            message: `Welcome back ${admin.name}!`,
+          });
+        } else {
+          return res.status(400).json({
+            message: "Wrong email or password",
+          });
+        }
+      })
+      .catch((err) => {
+        return res.status(400).json({
+          message: "please provide the email and password!",
+          errorCode: err.code,
+          errorMessage: err.message,
+        });
+      });
+  }
 }
 
 // function signout(req, res) {
@@ -226,8 +295,9 @@ module.exports = {
   index,
   show,
   addNewAdmin,
+  createOwner,
   updateData,
-  deleteAccount,
+  setStatusToDeleted,
   changePassword,
   login,
   // signout,
