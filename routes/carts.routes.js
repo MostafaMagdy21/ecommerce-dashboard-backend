@@ -8,13 +8,11 @@ router.post('/add', cartController.addToCart);
 // Update cart item
 router.put('/update/:cartId', cartController.updateCart);
 
-// Remove item from cart by productId and userId
-router.delete(
-  "/remove/:productId/:userId",
-  cartController.removeSingleProductFromCart);
+// Remove product(s) from the cart
+router.delete('/remove/:userId', cartController.removeProductsFromCart);
 
-// Remove multiple products from the cart
-router.delete('/removeMultiple/:userId', cartController.removeMultipleProductsFromCart);
+
+
 
 // Get cart items for a specific user
 router.get('/:userId', cartController.getCart);
