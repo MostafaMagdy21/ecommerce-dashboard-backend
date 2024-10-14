@@ -1,22 +1,12 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const cartSchema = new Schema(
+const cartItemSchema = new Schema(
   {
     productId: {
       type: Schema.Types.ObjectId,
       ref: "Product",
       required: true,
-    },
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    couponCodeId: {
-      type: Schema.Types.ObjectId,
-      ref: "CouponCode",
-      default: null,
     },
     quantity: {
       type: Number,
@@ -27,10 +17,28 @@ const cartSchema = new Schema(
       type: Number,
       required: true,
     },
-    total: { 
+    total: {
       type: Number,
       required: true,
     },
+    couponCodeId: {
+      type: Schema.Types.ObjectId,
+      ref: "CouponCode",
+      default: null,
+    },
+  },
+  { _id: false } 
+);
+
+const cartSchema = new Schema(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true, // Ensures each user can only have one cart
+    },
+    products: [cartItemSchema], // Array of products in the cart
   },
   { timestamps: true }
 );

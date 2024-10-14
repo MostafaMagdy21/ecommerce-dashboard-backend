@@ -4,18 +4,15 @@ const User = require("../models/user");
 const CouponCode = require("../models/couponCode");
 const mongoose = require("mongoose");
 
-// Add item to cart with coupon code validation
 async function addToCart(req, res) {
-  const { productId, userId, couponCodeId, quantity, price } = req.body;
+  const { productId, userId, couponCodeId, quantity } = req.body;
 
-  if (!productId || !userId || !quantity || !price) {
+  if (!productId || !userId || !quantity) {
     return res.status(400).json({ message: "Some fields are missed" });
   }
 
-  if (quantity <= 0 || price <= 0) {
-    return res
-      .status(400)
-      .json({ message: "Quantity and price must be positive" });
+  if (quantity <= 0) {
+    return res.status(400).json({ message: "Quantity must be positive" });
   }
 
   try {
@@ -25,6 +22,10 @@ async function addToCart(req, res) {
         .status(400)
         .json({ message: "Product not available or insufficient stock" });
     }
+
+    // Extract the base price and check if there's a discount
+    const price =
+      product.price.discount > 0 ? product.price.discount : product.price.base;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -36,6 +37,7 @@ async function addToCart(req, res) {
     let discount = 0;
     let total = quantity * price;
 
+    // Coupon code validation
     if (couponCodeId) {
       const couponCode = await CouponCode.findById(couponCodeId);
       const currentDate = new Date();
@@ -52,23 +54,43 @@ async function addToCart(req, res) {
       }
 
       discount = couponCode.discount;
-      total -= total * (discount / 100);
+      total -= total * (discount / 100); // Apply discount to total price
     }
 
-    // Check if the same product already exists in the user's cart
-    let cart = await Cart.findOne({ productId, userId });
+    // Find existing cart for the user
+    let cart = await Cart.findOne({ userId });
     if (cart) {
-      cart.quantity += quantity;
-      cart.total =
-        cart.quantity * price - cart.quantity * price * (discount / 100);
+      const existingProduct = cart.products.find(
+        (item) => item.productId.toString() === productId
+      );
+      if (existingProduct) {
+        // Update the quantity and total for the existing product
+        existingProduct.quantity += quantity;
+        existingProduct.total =
+          existingProduct.quantity * price -
+          existingProduct.quantity * price * (discount / 100);
+      } else {
+        cart.products.push({
+          productId,
+          quantity,
+          price,
+          total,
+          couponCodeId,
+        });
+      }
     } else {
+      // Create a new cart for the user
       cart = new Cart({
-        productId,
         userId,
-        couponCodeId,
-        quantity,
-        price,
-        total,
+        products: [
+          {
+            productId,
+            quantity,
+            price,
+            total,
+            couponCodeId,
+          },
+        ],
       });
     }
 
@@ -81,6 +103,8 @@ async function addToCart(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
+
+
 
 // Update cart item
 async function updateCart(req, res) {
