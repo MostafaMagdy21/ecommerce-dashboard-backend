@@ -1,0 +1,39 @@
+
+** Add to Cart:
+Method: POST
+URL: http://localhost:5000/cart
+Body (JSON):
+{
+  "productId": "6709b17cdd521e3ce3c7d14a",
+  "userId": "670cebfa988bcaa5b3451d6d",
+  "couponCodeId": "670cdc285f3ea56b276c1c55",
+  "quantity": 55
+}
+----------*-*-**--**-**-----------*****-**-*-*-*-*-*-*-*-*-*-***-*-*-*-*-*-*-*-
+** Update Cart
+Method: PUT
+URL: http://localhost:5000/cart/update/:cartId
+Body (JSON):
+{
+  "quantity": 3,
+  "couponCodeId": "64ff1234a1f1de5c1f77e9f0"
+}
+
+----------*-*-**--**-**-----------*****-**-*-*-*-*-*-*-*-*-*-***-*-*-*-*-*-*-*-
+** Remove Products from Cart 
+Method: DELETE
+URL: http://localhost:5000/cart/remove/:userId
+Body (JSON):
+{
+  "productIds": ["64fc434bb9f3ab7d6ed73b6d", "64ff1234a1f1de5c1f77e9f0"]
+}
+----------*-*-**--**-**-----------*****-**-*-*-*-*-*-*-*-*-*-***-*-*-*-*-*-*-*-
+
+** Get Cart 
+Method: GET
+URL: http://localhost:5000/cart/:userId
+----------*-*-**--**-**-----------*****-**-*-*-*-*-*-*-*-*-*-***-*-*-*-*-*-*-*-
+
+** Clear Cart
+Method: DELETE
+URL: http://localhost:5000/cart/clear/:userId
