@@ -19,7 +19,14 @@ router.put(
   "/deleteAccount/:id",
   authenticateUserToken,
   middleware.getUserById,
-  controller.deleteAccount
+  controller.setStatusToDeleted
+);
+
+router.put(
+  "/banAccount/:id",
+  authenticateAdminToken,
+  middleware.getUserById,
+  controller.setStatusToBanned
 );
 
 router.put(

@@ -127,7 +127,23 @@ function updateData(req, res) {
   }
 }
 
-function deleteAccount(req, res) {
+function setStatusToBanned(req, res) {
+  if (res.adminId) {
+    User.updateOne(res.user, { accountStatus: "banned" }).then(() => {
+      return res.status(200).json({
+        message: "User account status set to banned successfully",
+      });
+    });
+  } else {
+    return res.status(403).json({
+      message: "You're not authorized to make this change!",
+      method: req.method,
+      url: req.originalUrl,
+    });
+  }
+}
+
+function setStatusToDeleted(req, res) {
   if (res.user._id == res.userId) {
     User.updateOne(res.user, { accountStatus: "deleted" }).then(() => {
       return res.status(200).json({
@@ -189,39 +205,46 @@ async function login(req, res) {
   const { email, password } = req.body;
   const user = await User.findOne({ email: email });
 
-  bcrypt
-    .compare(password, user.password)
-    .then((isIdentical) => {
-      if (isIdentical) {
-        const token = jwt.sign({ userId: user._id }, process.env.AUTH_SECRET);
-        res.header("Authorization", `Bearer ${token}`);
+  if (user.accountStatus == "deleted" || user.accountStatus == "banned") {
+    return res.status(403).json({
+      message: "Forbidden access... your account is deleted or banned!",
+    });
+  } else {
+    bcrypt
+      .compare(password, user.password)
+      .then((isIdentical) => {
+        if (isIdentical) {
+          const token = jwt.sign({ userId: user._id }, process.env.AUTH_SECRET);
+          res.header("Authorization", `Bearer ${token}`);
 
-        User.updateOne({ _id: user._id }, { lastLoginDate: new Date() }).catch(
-          (err) => {
+          User.updateOne(
+            { _id: user._id },
+            { lastLoginDate: new Date() }
+          ).catch((err) => {
             return res.status(500).json({
               message: `something went wrong!`,
               errorCode: err.code,
               errorMessage: err.message,
             });
-          }
-        );
+          });
 
-        return res.status(200).json({
-          message: `Welcome back ${user.fname}!`,
-        });
-      } else {
+          return res.status(200).json({
+            message: `Welcome back ${user.fname}!`,
+          });
+        } else {
+          return res.status(400).json({
+            message: "Wrong email or password",
+          });
+        }
+      })
+      .catch((err) => {
         return res.status(400).json({
-          message: "Wrong email or password",
+          message: "please provide the email and password!",
+          errorCode: err.code,
+          errorMessage: err.message,
         });
-      }
-    })
-    .catch((err) => {
-      return res.status(400).json({
-        message: "please provide the email and password!",
-        errorCode: err.code,
-        errorMessage: err.message,
       });
-    });
+  }
 }
 
 // function signout(req, res) {
@@ -233,7 +256,8 @@ module.exports = {
   show,
   register,
   updateData,
-  deleteAccount,
+  setStatusToDeleted,
+  setStatusToBanned,
   changePassword,
   login,
   // signout,
