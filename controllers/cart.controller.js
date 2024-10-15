@@ -232,15 +232,44 @@ async function getCart(req, res) {
   }
 
   try {
-    const cartItems = await Cart.find({ userId })
+    const cart = await Cart.findOne({ userId })
       .populate("products.productId")
-      .populate("products.couponCodeId");
+      .populate("couponCodeId"); 
 
-    res.status(200).json(cartItems);
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    // Calculate the total price of the cart
+    let cartTotal = cart.products.reduce((acc, product) => {
+      return acc + product.total;
+    }, 0);
+
+   
+    if (cart.couponCodeId) {
+      const coupon = await CouponCode.findById(cart.couponCodeId);
+      const currentDate = new Date();
+
+      if (
+        coupon &&
+        coupon.discountStatus === "active" &&
+        currentDate >= coupon.startDate &&
+        currentDate <= coupon.endDate
+      ) {
+        cartTotal -= cartTotal * (coupon.discount / 100); // Apply the discount to the total cart value
+      }
+    }
+
+    
+    res.status(200).json({
+      cart,
+      total: cartTotal.toFixed(2) 
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
+
 
 
 // Clear entire cart for a user
