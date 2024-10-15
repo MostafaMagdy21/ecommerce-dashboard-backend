@@ -7,7 +7,7 @@ async function index(req, res) {
     if (allOrders.length) {
       res.status(200).json({
         method: "GET",
-        url: `http://localhost:5000/order/`,
+        url: `http://localhost:5000/orders/`,
         body: allOrders.map((result) => ({
           cart: result.cart,
           shippingCost: result.shipping,
@@ -20,7 +20,7 @@ async function index(req, res) {
     } else {
       res.status(404).json({
         method: "GET",
-        url: `http://localhost:5000/order/`,
+        url: `http://localhost:5000/orders/`,
         body: {
           message: "No Orders Yet...",
         },
@@ -41,7 +41,7 @@ async function show(req, res) {
     if (!singleOrder) {
       return res.status(404).json({
         method: "GET",
-        url: `http://localhost:5000/order/${id}`,
+        url: `http://localhost:5000/orders/${id}`,
         body: { message: "Order Not Found..." },
       });
     }
@@ -52,7 +52,7 @@ async function show(req, res) {
 
     res.status(200).json({
       method: "GET",
-      url: `http://localhost:5000/order/${id}`,
+      url: `http://localhost:5000/orders/${id}`,
       body: {
         id: singleOrder._id,
         cart,
@@ -154,7 +154,7 @@ async function store(req, res) {
     // Send response with success message
     res.status(201).json({
       method: "POST",
-      url: `http://localhost:5000/order/`,
+      url: `http://localhost:5000/orders/`,
       body: { message: "Order created successfully and cart cleared" },
     });
   } catch (error) {
