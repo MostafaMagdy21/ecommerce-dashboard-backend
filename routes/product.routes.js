@@ -1,19 +1,19 @@
-const express = require('express'),
-router = express.Router(),
-ProductController =require('../controllers/product.controller');
 
-router.post('/', ProductController.storeProduct)
-router.get('/', ProductController.getAllProducts)
-router.get('/:id', ProductController.getProductById)
-router.put('/:id', ProductController.updateProduct)
-router.delete('/:id', ProductController.deleteProduct)
+const express = require('express');
+const router = express.Router();
+const ProductController = require('../controllers/product.controller');
+const middleware = require('../middlewares/product.middleware');
 
+router.post('/',
+    middleware.upload, 
+    ProductController.store);
 
+router.put('/:id',
+    middleware.upload, 
+    ProductController.update);
+
+router.get('/', ProductController.index);
+router.get('/:id', ProductController.show);
+router.delete('/:id', ProductController.destroy);
 
 module.exports = router;
-
-
-
-
-
-

@@ -15,7 +15,7 @@ var products = new Schema(
 
     description: { type: String },
 
-    images: [ {type: String,required: true, }, ],
+    images: [ {type: String , required: false, }, ],
 
     categoryId: { type: Schema.Types.ObjectId, required: false },
 

@@ -2,12 +2,12 @@ const express = require('express'),
 router = express.Router(),
 ReviewController =require('../controllers/review.controller');
 
-router.post('/', ReviewController.storeReview)
-router.get('/', ReviewController.getAllReviews)
-router.get('/:id', ReviewController.getReviewById)
-router.get('/product/:productId', ReviewController.getReviewByProductId)
-router.put('/:id', ReviewController.updateReview)
-router.delete('/:id', ReviewController.deleteReview)
+router.post('/', ReviewController.store)
+router.get('/', ReviewController.index)
+router.get('/:id', ReviewController.show)
+router.get('/product/:productId', ReviewController.getByProductId)
+router.put('/:id', ReviewController.update)
+router.delete('/:id', ReviewController.destroy)
 
 
 module.exports = router;

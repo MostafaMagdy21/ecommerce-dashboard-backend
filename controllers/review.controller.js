@@ -1,7 +1,7 @@
 const Review = require("../models/review");
 const mongoose = require("mongoose");
 
-function storeReview(req, res) {
+function store(req, res) {
   if (!req.body) {
     return res.status(400).json({ message: "Request body cannot be empty." });
   }
@@ -38,11 +38,11 @@ function storeReview(req, res) {
     });
 }
 
-function getAllReviews(req, res) {
+function index(req, res) {
   Review.find({})
     // .select('title _id')
     .then((reviews) => {
-      if (!reviews) {
+      if (reviews.length===0) {
         res.status(404).json({
           message: "No reviews Yet",
           method: "GET",
@@ -63,11 +63,11 @@ function getAllReviews(req, res) {
     });
 }
 
-function getReviewById(req, res) {
+function show(req, res) {
   const id = req.params.id;
   Review.findById(id)
     .then((review) => {
-      if (!review) {
+      if (review.length===0) {
         return res.status(404).json({ message: "Review not found" });
       }
       res.status(200).json({
@@ -86,11 +86,14 @@ function getReviewById(req, res) {
     });
 }
 
-function getReviewByProductId(req, res) {
+
+
+
+function getByProductId(req, res) {
   const { productId } = req.params;
   Review.find({ productId })
     .then((reviews) => {
-      if (!reviews) {
+      if (reviews.length===0) {
         return res.status(404).json({
           message: "No reviews found for this product.",
           method: "GET",
@@ -113,7 +116,7 @@ function getReviewByProductId(req, res) {
     });
 }
 
-function updateReview(req, res) {
+function update(req, res) {
   const id = req.params.id;
   const updatedData = {
     rating: "",
@@ -126,7 +129,7 @@ function updateReview(req, res) {
 
   Review.findByIdAndUpdate(id, updatedData, { new: true })
     .then((review) => {
-      if (!review) {
+      if (review.length===0) {
         res.status(404).json({
           message: "Review Not Found",
         });
@@ -147,12 +150,12 @@ function updateReview(req, res) {
     });
 }
 
-function deleteReview(req, res) {
+function destroy(req, res) {
   const id = req.params.id;
 
   Review.findByIdAndDelete(id)
     .then((result) => {
-      if (!result) {
+      if (result.length===0) {
         res.status(404).json({ message: "Review Not Found" });
       }
       res.status(200).json({
@@ -172,10 +175,10 @@ function deleteReview(req, res) {
 }
 
 module.exports = {
-  storeReview,
-  updateReview,
-  deleteReview,
-  getAllReviews,
-  getReviewById,
-  getReviewByProductId,
+  store,
+  update,
+  destroy,
+  index,
+  show,
+  getByProductId,
 };

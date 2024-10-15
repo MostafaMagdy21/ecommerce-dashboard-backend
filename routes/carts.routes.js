@@ -6,13 +6,13 @@ const cartController = require("../controllers/cart.controller");
 router.post('/', cartController.addToCart);
 
 // Update cart item
-router.put('/update/:cartId', cartController.updateCart);
+router.put('/:cartId', cartController.update);
 
 // Remove product(s) from the cart
-router.delete('/remove/:userId', cartController.removeProductsFromCart);
+router.delete('/:userId', cartController.removeProductsFromCart);
 
 // Get cart items for a specific user
-router.get('/:userId', cartController.getCart);
+router.get('/:userId', cartController.show);
 
 // Clear entire cart for a user
 router.delete('/clear/:userId', cartController.clearCart);

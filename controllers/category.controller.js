@@ -1,12 +1,12 @@
 const Category = require("../models/category");
 const mongoose = require("mongoose");
 
-function getAllCategories(req, res) {
+function index(req, res) {
   Category.find({})
     .then((categories) => {
-      if (!categories) {
+      if (categories.length===0) {
         res.status(404).json({
-          message: "No Ctegories Yet",
+          message: "No Categories Yet",
           method: "GET",
           statusCode: "404",
         });
@@ -25,11 +25,11 @@ function getAllCategories(req, res) {
     });
 }
 
-function getCategoryById(req, res) {
+function show(req, res) {
   const id = req.params.id;
   Category.findById(id)
     .then((category) => {
-      if (!category) {
+      if (category.length===0) {
         return res.status(404).json({
           message: "Category Not Found",
         });
@@ -50,7 +50,7 @@ function getCategoryById(req, res) {
     });
 }
 
-function storeCategory(req, res) {
+function store(req, res) {
   const { categoryName, description } = req.body;
 
   const newCategory = new Category({
@@ -75,7 +75,7 @@ function storeCategory(req, res) {
     });
 }
 
-function updateCategory(req, res) {
+function update(req, res) {
   const id = req.params.id;
   const updatedData = {
     categoryName: "",
@@ -88,7 +88,7 @@ function updateCategory(req, res) {
 
   Category.findByIdAndUpdate(id, updatedData, { new: true })
     .then((category) => {
-      if (!category) {
+      if (category.length===0) {
         return res.status(404).json({
           message: "Category Not Found",
         });
@@ -109,12 +109,12 @@ function updateCategory(req, res) {
     });
 }
 
-function deleteCategory(req, res) {
+function destroy(req, res) {
   const id = req.params.id;
 
   Category.findByIdAndDelete(id)
     .then((result) => {
-      if (!result) {
+      if (result.length ===0) {
         return res.status(404).json({
           message: "Category Not Found",
         });
@@ -135,10 +135,12 @@ function deleteCategory(req, res) {
     });
 }
 
+
+
 module.exports = {
-  getCategoryById,
-  getAllCategories,
-  storeCategory,
-  updateCategory,
-  deleteCategory,
+  show,
+  index,
+  store,
+  update,
+  destroy,
 };

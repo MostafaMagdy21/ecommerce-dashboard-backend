@@ -115,7 +115,7 @@ async function addToCart(req, res) {
 }
 
 // Update cart item
-async function updateCart(req, res) {
+async function update(req, res) {
   const { cartId } = req.params;
   const { quantity, couponCodeId } = req.body;
 
@@ -224,7 +224,7 @@ async function removeProductsFromCart(req, res) {
 
 
 // Get cart items for a specific user
-async function getCart(req, res) {
+async function show(req, res) {
   const { userId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -301,8 +301,8 @@ async function clearCart(req, res) {
 
 module.exports = {
   addToCart,
-  updateCart,
+  update,
   removeProductsFromCart,
-  getCart,
+  show,
   clearCart,
 };

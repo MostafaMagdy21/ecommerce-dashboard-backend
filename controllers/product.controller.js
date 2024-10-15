@@ -1,23 +1,25 @@
 const Product = require("../models/product");
 const mongoose = require("mongoose");
 
-function storeProduct(req, res) {
+
+function store(req, res) {
+  const imagePaths = req.files.map(file => file.path); // get paths of all uploaded images
   const product = new Product({
+    images: imagePaths,
     sku: req.body.sku,
     title: req.body.title,
     price: {
-      base: req.body.price.base,
-      discount: req.body.price.discount,
+      base: req.body.base,
+      discount: req.body.discount,
     },
     description: req.body.description,
-    images: req.body.images,
     categoryId: req.body.categoryId,
     quantity: req.body.quantity,
     options: {
-      vitamins: req.body.options.vitamins || [],
-      size: req.body.options.size || [],
-      scent: req.body.options.scent || [],
-      gender: req.body.options.gender || [],
+      vitamins: req.body.vitamins || [],
+      size: req.body.size || [],
+      scent: req.body.scent || [],
+      gender: req.body.gender || [],
     },
     tags: req.body.tags || [],
     rating: req.body.rating,
@@ -42,88 +44,34 @@ function storeProduct(req, res) {
     });
 }
 
-function getProductById(req, res) {
-  const id = req.params.id;
-  Product.findById(id)
-    .then((product) => {
-      if (!product) {
-        return res.status(404).json({
-          message: "Product Not Found",
-        });
-      }
-      res.status(200).json({
-        message: "Product Retrieved Successfully",
-        product: product,
-      });
-    })
-    .catch((err) => {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ message: "Invalid Product ID" });
-      } else {
-        res.status(500).json({
-          error: err,
-        });
-      }
-    });
-}
-
-function getAllProducts(req, res) {
-  Product.find({})
-    // .select('title _id')
-    .then((products) => {
-      if (!products) {
-        res.status(404).json({
-          message: "No Products Yet",
-          method: "GET",
-          statusCode: "404",
-        });
-      } else {
-        res.status(200).json({
-          message: "Products Retrieved Successfully",
-          method: "GET",
-          url: "http://localhost:5000/products",
-          statusCode: "200",
-          products: products,
-        });
-      }
-    })
-    .catch((err) => {
-      res.status(500).json({ error: err });
-    });
-}
-
-function updateProduct(req, res) {
+function update(req, res) {
   const id = req.params.id;
 
   const updatedData = {
-    sku: "",
-    title: "",
+    sku: req.body.sku,
+    title: req.body.title,
     price: {
-      base: 0,
-      discount: 0,
+      base: req.body.base,
+      discount: req.body.discount,
     },
-    description: "",
-    images: "",
-    categoryId: "" || null,
-    quantity: 0,
+    description: req.body.description,
+    images: req.files ? req.files.map(file => file.path) : undefined, // Handle multiple images
+    categoryId: req.body.categoryId || null,
+    quantity: req.body.quantity,
     options: {
-      vitamins: "" || [],
-      size: "" || [],
-      scent: "" || [],
-      gender: "" || [],
+      vitamins: req.body.vitamins || [],
+      size: req.body.size || [],
+      scent: req.body.scent || [],
+      gender: req.body.gender || [],
     },
-    tags: "" || [],
-    rating: "" || null,
-    status: "",
+    tags: req.body.tags || [],
+    rating: req.body.rating,
+    status: req.body.status,
   };
-
-  for (const key in updatedData) {
-    updatedData[key] = req.body[key];
-  }
 
   Product.findByIdAndUpdate(id, updatedData, { new: true })
     .then((product) => {
-      if (!product) {
+      if (product.length===0) {
         return res.status(404).json({
           message: "Product Not Found",
         });
@@ -144,12 +92,63 @@ function updateProduct(req, res) {
     });
 }
 
-function deleteProduct(req, res) {
+
+function show(req, res) {
+  const id = req.params.id;
+  Product.findById(id)
+    .then((product) => {
+      if (product.length===0) {
+        return res.status(404).json({
+          message: "Product Not Found",
+        });
+      }
+      res.status(200).json({
+        message: "Product Retrieved Successfully",
+        product: product,
+      });
+    })
+    .catch((err) => {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid Product ID" });
+      } else {
+        res.status(500).json({
+          error: err,
+        });
+      }
+    });
+}
+
+function index(req, res) {
+  Product.find({})
+    .select('title _id images price rating')
+    .then((products) => {
+      if (products.length===0) {
+        res.status(404).json({
+          message: "No Products Yet",
+          method: "GET",
+          statusCode: "404",
+        });
+      } else {
+        res.status(200).json({
+          message: "Products Retrieved Successfully",
+          method: "GET",
+          url: "http://localhost:5000/products",
+          statusCode: "200",
+          products: products,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
+}
+
+function destroy(req, res) {
   const id = req.params.id;
 
   Product.findByIdAndDelete(id)
     .then((result) => {
-      if (!result) {
+      if (result.length===0) {
         return res.status(404).json({
           message: "Product Not Found",
         });
@@ -171,9 +170,9 @@ function deleteProduct(req, res) {
 }
 
 module.exports = {
-  storeProduct,
-  updateProduct,
-  deleteProduct,
-  getProductById,
-  getAllProducts,
+  store,
+  update,
+  destroy,
+  show,
+  index,
 };

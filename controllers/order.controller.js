@@ -1,7 +1,7 @@
 const Orders = require("../models/order");
 const Cart = require("../models/cart");
 const ShippingCost = require("../models/shippingCost");
-async function getAllOrders(req, res) {
+async function index(req, res) {
   try {
     const allOrders = await Orders.find({}).populate("cart shipping");
     if (allOrders.length) {
@@ -34,7 +34,7 @@ async function getAllOrders(req, res) {
   }
 }
 
-async function getSingleOrder(req, res) {
+async function show(req, res) {
   const { id } = req.params;
   try {
     const singleOrder = await Orders.findById(id).populate("cart shipping");
@@ -118,7 +118,7 @@ async function updateOrdersStatus(req, res) {
 }
 
 
-async function createOrder(req, res) {
+async function store(req, res) {
   const { cartId, shippingId } = req.body;
 
   try {
@@ -136,7 +136,7 @@ async function createOrder(req, res) {
 
     // Calculate total price (add shipping cost to cart total)
     const totalPrice =
-      cart.products.reduce((acc, item) => acc + item.total, 0) + shipping.cost;
+      cart.total + shipping.cost;
 
     // Create a new order
     const newOrder = new Orders({
@@ -167,8 +167,8 @@ async function createOrder(req, res) {
 
 
 module.exports = {
-  createOrder,
-  getSingleOrder,
-  getAllOrders,
+  store,
+  show,
+  index,
   updateOrdersStatus,
 };

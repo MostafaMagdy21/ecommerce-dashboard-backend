@@ -13,8 +13,8 @@ var reviews = new Schema({
     
     type: Schema.Types.ObjectId,
     ref:"User",
-    required: false,
-  immutable: true
+    required: true,
+    immutable: true
   },
 
 
