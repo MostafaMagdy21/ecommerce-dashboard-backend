@@ -200,12 +200,16 @@ async function removeProductsFromCart(req, res) {
     cart.products = cart.products.filter(
       (item) => !productIds.includes(item.productId.toString())
     );
+    // Recalculate cart total
+    cart.total = calculateCartTotal(cart);
 
     // Restore stock for each removed product
     for (const productId of productIds) {
       const product = await Product.findById(productId);
       if (product) {
-        const removedItem = cart.products.find(item => item.productId.toString() === productId);
+        const removedItem = cart.products.find(
+          (item) => item.productId.toString() === productId
+        );
         if (removedItem) {
           product.quantity += removedItem.quantity; // Restore stock
           await product.save();
@@ -216,7 +220,9 @@ async function removeProductsFromCart(req, res) {
     // Save the updated cart
     await cart.save();
 
-    res.status(200).json({ message: "Products removed from cart successfully", cart });
+    res
+      .status(200)
+      .json({ message: "Products removed from cart successfully", cart });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
