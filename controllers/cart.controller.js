@@ -51,7 +51,7 @@ async function addToCart(req, res) {
         currentDate > couponCode.endDate
       ) {
         return res.status(400).json({
-          message: "Invalid coupon code or expired, contact the admin!",
+          message: "Invalid coupon code or expired",
         });
       }
 
@@ -241,7 +241,7 @@ async function getCart(req, res) {
 // Clear entire cart for a user
 async function clearCart(req, res) {
   const { userId } = req.params;
-
+  
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return res.status(400).json({ message: "Invalid user ID" });
   }
