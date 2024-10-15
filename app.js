@@ -16,10 +16,10 @@ conn.on("error", (err) => console.log("connection failed"));
 app.use(express.json());
 
 //routing
-app.use("/admin", require("./routes/admins.routes"));
-app.use("/user", require("./routes/user.routes"));
+app.use("/admins", require("./routes/admins.routes"));
+app.use("/users", require("./routes/user.routes"));
 app.use("/cart", cartRoutes);
-app.use("/coupon", require("./routes/coupon.routes"));
+app.use("/coupons", require("./routes/coupon.routes"));
 app.use("/order", require("./routes/order.routes"));
 app.use("/shippingCost", require("./routes/shippingCost.routes"));
 app.use("/products", require("./routes/product.routes"));
