@@ -36,7 +36,7 @@ async function addToCart(req, res) {
 
     // Extract the base price and check if there's a discount
     const price =
-      product.price.discount > 0 ? product.price.discount : product.price.base;
+      product.price.discount > 0 ? product.price.base - (product.price.base)*(product.price.discount/100) : product.price.base;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -131,7 +131,7 @@ async function updateCart(req, res) {
     const cart = await Cart.findById(cartId);
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
-    const product = await Product.findById(cart.productId);
+    const product = await Product.findById(cart.products.productId);
     if (!product || quantity > product.quantity + cart.quantity) {
       return res
         .status(400)
