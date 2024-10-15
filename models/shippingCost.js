@@ -6,7 +6,7 @@ const shippingCostSchema = new Schema(
     adminId: {
       type: Schema.Types.ObjectId,
       ref: "Admin",
-      required: false,
+      required: true,
     },
     place: { type: String, required: true, unique: true, lowercase: true },
     cost: { type: Number, required: true },
