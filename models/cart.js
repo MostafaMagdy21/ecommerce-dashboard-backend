@@ -21,13 +21,8 @@ const cartItemSchema = new Schema(
       type: Number,
       required: true,
     },
-    couponCodeId: {
-      type: Schema.Types.ObjectId,
-      ref: "CouponCode",
-      default: null,
-    },
   },
-  { _id: false } 
+  { _id: false }
 );
 
 const cartSchema = new Schema(
@@ -39,6 +34,16 @@ const cartSchema = new Schema(
       unique: true, // Ensures each user can only have one cart
     },
     products: [cartItemSchema], // Array of products in the cart
+    total: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    couponCodeId: {
+      type: Schema.Types.ObjectId,
+      ref: "CouponCode",
+      default: null,
+    },
   },
   { timestamps: true }
 );

@@ -5,7 +5,16 @@ const CouponCode = require("../models/couponCode");
 const mongoose = require("mongoose");
 
 
+// Function to calculate the total price of the cart
+function calculateCartTotal(cart) {
+  let total = 0;
+  cart.products.forEach((item) => {
+    total += item.total;
+  });
+  return total;
+}
 
+// Add to cart
 async function addToCart(req, res) {
   const { productId, userId, couponCodeId, quantity } = req.body;
 
@@ -36,10 +45,45 @@ async function addToCart(req, res) {
         .json({ message: "User not found, you must signup first!" });
     }
 
+    let cart = await Cart.findOne({ userId });
     let discount = 0;
     let total = quantity * price;
 
-    // Coupon code validation
+    if (cart) {
+      // If the cart exists, update or add the product
+      const existingProduct = cart.products.find(
+        (item) => item.productId.toString() === productId
+      );
+      if (existingProduct) {
+        existingProduct.quantity += quantity;
+        existingProduct.total = existingProduct.quantity * price;
+      } else {
+        cart.products.push({
+          productId,
+          quantity,
+          price,
+          total,
+        });
+      }
+    } else {
+      // If the cart doesn't exist, create a new one
+      cart = new Cart({
+        userId,
+        products: [
+          {
+            productId,
+            quantity,
+            price,
+            total,
+          },
+        ],
+      });
+    }
+
+    // Recalculate the total price of the cart
+    cart.total = calculateCartTotal(cart);
+
+    // Apply coupon if provided
     if (couponCodeId) {
       const couponCode = await CouponCode.findById(couponCodeId);
       const currentDate = new Date();
@@ -56,48 +100,12 @@ async function addToCart(req, res) {
       }
 
       discount = couponCode.discount;
-      total -= total * (discount / 100); // Apply discount to total price
-    }
-
-    // Find existing cart for the user
-    let cart = await Cart.findOne({ userId });
-    if (cart) {
-      const existingProduct = cart.products.find(
-        (item) => item.productId.toString() === productId
-      );
-      if (existingProduct) {
-        // Update the quantity and total for the existing product
-        existingProduct.quantity += quantity;
-        existingProduct.total =
-          existingProduct.quantity * price -
-          existingProduct.quantity * price * (discount / 100);
-      } else {
-        cart.products.push({
-          productId,
-          quantity,
-          price,
-          total,
-          couponCodeId,
-        });
-      }
-    } else {
-      // Create a new cart for the user
-      cart = new Cart({
-        userId,
-        products: [
-          {
-            productId,
-            quantity,
-            price,
-            total,
-            couponCodeId,
-          },
-        ],
-      });
+      cart.total -= cart.total * (discount / 100);
+      cart.couponCodeId = couponCodeId;
     }
 
     await cart.save();
-    product.quantity -= quantity; // Decrement stock
+    product.quantity -= quantity;
     await product.save();
 
     res.status(201).json(cart);
@@ -105,8 +113,6 @@ async function addToCart(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
-
-
 
 // Update cart item
 async function updateCart(req, res) {
@@ -132,11 +138,18 @@ async function updateCart(req, res) {
         .json({ message: "Product not available or insufficient stock" });
     }
 
-    // Use discount price if available, otherwise use base price
-    const price =
-      product.price.discount > 0 ? product.price.discount : product.price.base;
-    let total = quantity * price;
+    // Update cart item
+    cart.products.forEach((item) => {
+      if (item.productId.toString() === product._id.toString()) {
+        item.quantity = quantity;
+        item.total = item.quantity * product.price;
+      }
+    });
 
+    // Recalculate cart total
+    cart.total = calculateCartTotal(cart);
+
+    // Apply coupon if needed
     if (couponCodeId) {
       const couponCode = await CouponCode.findById(couponCodeId);
       const currentDate = new Date();
@@ -150,25 +163,17 @@ async function updateCart(req, res) {
         return res.status(400).json({ message: "Invalid coupon code" });
       }
 
-      total -= total * (couponCode.discount / 100);
+      cart.total -= cart.total * (couponCode.discount / 100);
+      cart.couponCodeId = couponCodeId;
     }
 
-    // Update stock
-    product.quantity += cart.quantity; // restore previous quantity
-    product.quantity -= quantity; // reduce by the new quantity
-    await product.save();
-
-    cart.quantity = quantity;
-    cart.price = price;
-    cart.total = total;
-    cart.couponCodeId = couponCodeId;
     await cart.save();
-
     res.status(200).json(cart);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
+
 
 // Remove product(s) from the cart
 async function removeProductsFromCart(req, res) {
