@@ -54,7 +54,4 @@ URL: http://localhost:5000/cart/clear/:userId
     "id": "order id",
     "newStatus": "status"
   }
-  // get user orders
-  "method": "get",
-  "url": "http://localhost:5000/orders/user/:id",
 }

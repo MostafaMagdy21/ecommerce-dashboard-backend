@@ -4,22 +4,45 @@ const ShippingCost = require("../models/shippingCost");
 
 async function index(req, res) {
 	try {
-		Orders.find({})
-			.populate("cart shipping")
-			.then((result) => {
-				result.map((order) => {
-					Cart.find({ _id: order.cart?._id })
-						.populate("products.productId")
-						.populate("userId")
-						.then((results) => {
-							res.status(200).json({
-								method: "GET",
-								url: `http://localhost:5000/orders/`,
-								results,
-							});
-						});
-				});
+		const allOrders = await Orders.find({}).populate("cart shipping");
+		if (allOrders.length) {
+			res.status(200).json({
+				method: "GET",
+				url: `http://localhost:5000/orders/`,
+				body: allOrders.map((result) => ({
+					cart: result.cart,
+					shippingCost: result.shipping,
+					totalPrice: result.totalPrice,
+					status: result.status,
+					createdAt: result.createdAt,
+					updatedAt: result.updatedAt,
+				})),
 			});
+		} else {
+			res.status(404).json({
+				method: "GET",
+				url: `http://localhost:5000/orders/`,
+				body: {
+					message: "No Orders Yet...",
+				},
+			});
+		}
+		// Orders.find({})
+		// 	.populate("cart shipping")
+		// 	.then((result) => {
+		// 		result.map((order) => {
+		// 			Cart.find({ _id: order.cart?._id })
+		// 				.populate("products.productId")
+		// 				.populate("userId")
+		// 				.then((results) => {
+		// 					res.status(200).json({
+		// 						method: "GET",
+		// 						url: `http://localhost:5000/orders/`,
+		// 						body: results,
+		// 					});
+		// 				});
+		// 		});
+		// 	});
 	} catch (err) {
 		res.status(500).json({
 			message: "Server Error",
@@ -163,7 +186,9 @@ async function store(req, res) {
 }
 
 async function getOrdersByUser(req, res) {
+	const { id } = req.params;
 	try {
+		const allOrders = await Orders.find({}).populate("");
 	} catch (err) {
 		res.status(500).json({
 			message: "Server Error",
