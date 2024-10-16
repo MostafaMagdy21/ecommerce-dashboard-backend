@@ -9,7 +9,7 @@ const cors = require("cors");
 mongoose.connect(process.env.DB_ONLINE);
 const conn = mongoose.connection;
 conn.once("open", () => console.log(`Database Connected Successfully`));
-conn.on("error", (err) => console.log("connection failed", err));
+conn.on("error", (err) => console.log("connection failed", err.message));
 
 // middlewares
 app.use(express.json());
