@@ -6,7 +6,7 @@ function getUserById(req, res, next) {
   const { id } = req.params;
   User.findById(id)
     .select(
-      "fname lname email birthDay gender phone address profileImage latestOrderId lastLoginDate accountStatus"
+      "fname lname email birthDay gender phone address profileImage latestOrderId lastLoginDate accountStatus createdAt"
     )
     .then((user) => {
       if (user) {
