@@ -1,6 +1,7 @@
 const Orders = require("../models/order");
 const Cart = require("../models/cart");
 const ShippingCost = require("../models/shippingCost");
+const mongoose = require("mongoose");
 
 async function index(req, res) {
 	try {
@@ -53,6 +54,9 @@ async function index(req, res) {
 
 async function show(req, res) {
 	const { id } = req.params;
+	if (!mongoose.Types.ObjectId.isValid(id)) {
+		return res.status(400).json({ message: "Invalid order ID" });
+	}
 	try {
 		const singleOrder = await Orders.findById(id)
 			.populate("cart", "couponCodeId")
@@ -95,6 +99,9 @@ async function show(req, res) {
 
 async function updateOrdersStatus(req, res) {
 	const { id, newStatus } = req.body;
+	if (!mongoose.Types.ObjectId.isValid(id)) {
+		return res.status(400).json({ message: "Invalid order ID" });
+	}
 	try {
 		const singleOrder = await Orders.findById(id);
 		if (!singleOrder) {
@@ -141,6 +148,12 @@ async function updateOrdersStatus(req, res) {
 
 async function store(req, res) {
 	const { cartId, shippingId } = req.body;
+	if (!mongoose.Types.ObjectId.isValid(cartId)) {
+		return res.status(400).json({ message: "Invalid card ID" });
+	}
+	if (!mongoose.Types.ObjectId.isValid(shippingId)) {
+		return res.status(400).json({ message: "Invalid shipping ID" });
+	}
 
 	try {
 		// Find the cart by ID
@@ -188,7 +201,16 @@ async function store(req, res) {
 async function getOrdersByUser(req, res) {
 	const { id } = req.params;
 	try {
-		const allOrders = await Orders.find({}).populate("");
+		if (!mongoose.Types.ObjectId.isValid(id)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
+		const allOrders = await Orders.find({}).populate("cart");
+		const userOrders = allOrders.find((order) => {
+			return order.cart.userId == id;
+		});
+		res.status(200).json({
+			userOrders,
+		});
 	} catch (err) {
 		res.status(500).json({
 			message: "Server Error",
