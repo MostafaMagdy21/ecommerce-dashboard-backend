@@ -37,3 +37,21 @@ URL: http://localhost:5000/cart/:userId
 ** Clear Cart
 Method: DELETE
 URL: http://localhost:5000/cart/clear/:userId
+
+// order
+{
+// createOrder
+  "method": "post"
+  "url": "http://localhost:5000/orders/",
+  "body": {
+    "userId": "user id",
+    "shippingId": "shipping id"
+  }
+// change status
+  "method": "put"
+  "url": "http://localhost:5000/orders/update/:id",
+  "body": {
+    "id": "order id",
+    "newStatus": "status"
+  }
+}

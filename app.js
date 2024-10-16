@@ -1,19 +1,19 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const cartRoutes = require("./routes/carts.routes");
 const mongoose = require("mongoose");
-require("dotenv").config();
+const cors = require("cors");
 
 //database connection
 mongoose.connect(process.env.DB_ONLINE);
 const conn = mongoose.connection;
-conn.once("open", () =>
-  console.log(`Database Connected Successfully At Link ${process.env.DB_ONLINE}`)
-);
-conn.on("error", (err) => console.log("connection failed"));
+conn.once("open", () => console.log(`Database Connected Successfully`));
+conn.on("error", (err) => console.log("connection failed", err.message));
 
 // middlewares
 app.use(express.json());
+app.use(cors());
 
 //routing
 app.use("/admins", require("./routes/admins.routes"));

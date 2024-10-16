@@ -5,6 +5,7 @@ const express = require("express"),
 router.post("/", orderController.store);
 router.get("/:id", orderController.show);
 router.get("/", orderController.index);
+router.get("/user/:id", orderController.getOrdersByUser);
 router.put("/update/:id", orderController.updateOrdersStatus);
 
 module.exports = router;

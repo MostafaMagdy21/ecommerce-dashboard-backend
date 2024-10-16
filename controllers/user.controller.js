@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 function index(req, res) {
   User.find({})
     .select(
-      "fname lname email birthDay gender address phone profileImage latestOrderId lastLoginDate accountStatus"
+      "fname lname email birthDay gender address phone profileImage latestOrderId lastLoginDate accountStatus createdAt"
     )
     .then((users) => {
       if (users.length > 0) {
