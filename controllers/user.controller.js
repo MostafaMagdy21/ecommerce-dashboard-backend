@@ -16,7 +16,24 @@ function index(req, res) {
           method: req.method,
           url: req.originalUrl,
           total: users.length,
-          users: users,
+          users: users.map((user) => {
+            return {
+              id: user._id,
+              fname: user.fname,
+              lname: user.lname,
+              fullName: `${user.fname} ${user.lname}`,
+              email: user.email,
+              birthDay: user.birthDay,
+              gender: user.gender,
+              address: user.address,
+              phone: user.phone,
+              profileImage: user.profileImage,
+              latestOrderId: user.latestOrderId,
+              lastLoginDate: user.lastLoginDate,
+              accountStatus: user.accountStatus,
+              createdAt: user.createdAt,
+            };
+          }),
         });
       } else {
         return res.status(404).json({
