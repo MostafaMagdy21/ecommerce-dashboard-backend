@@ -1,5 +1,7 @@
 require("dotenv").config();
 const express = require("express");
+const multer = require('multer');
+const path = require("path")
 const app = express();
 const cartRoutes = require("./routes/carts.routes");
 const mongoose = require("mongoose");
@@ -14,6 +16,8 @@ conn.on("error", (err) => console.log("connection failed", err.message));
 // middlewares
 app.use(express.json());
 app.use(cors());
+
+
 
 //routing
 app.use("/admins", require("./routes/admins.routes"));

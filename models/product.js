@@ -1,14 +1,13 @@
-
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var products = new Schema(
   {
-     sku: { type: String, required: true },
+    sku: { type: String, required: true },
 
-     title: { type: String, required: true },
+    title: { type: String, required: true },
 
-      price: {
+    price: {
       base: { type: Number, required: true },
       discount: { type: Number, default: 0 },
     },
@@ -17,7 +16,7 @@ var products = new Schema(
 
     images: [ {type: String , required: false, }, ],
 
-    categoryId: { type: Schema.Types.ObjectId, required: false },
+    categoryId: { type: Schema.Types.ObjectId, ref:"category", required: false },
 
     quantity: { type: Number, required: true, default: 1},
 
@@ -27,20 +26,15 @@ var products = new Schema(
       gender: [{ type: String}],
     },
 
-
     tags: [{ type: String }],
 
-
     rating: { type: Number,default: 0 },
-
 
     status: { type: String, required: true},
 
     createdBy: { type: Schema.Types.ObjectId, required: false},
   },
-
-
-
+  
   { timestamps: true }
 );
 
