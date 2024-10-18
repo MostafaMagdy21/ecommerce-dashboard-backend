@@ -102,12 +102,14 @@ async function store(req, res) {
 // Update a category and recalculate product stock and starting price
 function update(req, res) {
   const id = req.params.id;
-  const { categoryName, description, imageUrl } = req.body;
+  const { categoryTitle, description, stock, createdBy } = req.body; // Use categoryTitle
 
   const updatedData = {
-    categoryName: categoryName,
+    categoryTitle: categoryTitle, // Fixed field name
     description: description,
-    imageUrl: imageUrl, // Added imageUrl field
+    stock: stock, // Include stock if it's meant to be updated
+    createdBy: createdBy, // Include createdBy if it's meant to be updated
+    imageUrl: req.files.map((file) => file.path), // Handle uploaded images
   };
 
   Category.findByIdAndUpdate(id, updatedData, { new: true })
@@ -152,6 +154,7 @@ function update(req, res) {
       }
     });
 }
+
 
 // Delete a category
 function destroy(req, res) {
