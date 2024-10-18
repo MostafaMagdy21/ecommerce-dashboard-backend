@@ -1,4 +1,5 @@
 const ShippingCost = require("../models/shippingCost");
+const Admin = require("../models/admin");
 
 
 
@@ -115,6 +116,11 @@ function store(req, res) {
   shippingCost
     .save()
     .then((shippingCost) => {
+      console.log(req.body.adminId)
+      const admin = Admin.findById(req.body.adminId)
+      if (!admin) {
+        return res.status(404).json({ message: "Admin Not Found" });
+      }
       return res.status(201).json({
         message: "shipping cost added successfully!",
         method: req.method,
@@ -168,8 +174,3 @@ module.exports = {
   update,
   destroy,
 };
-
-
-
-
-

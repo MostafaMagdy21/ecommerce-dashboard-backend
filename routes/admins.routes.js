@@ -10,7 +10,7 @@ router.get("/:id", middleware.getAdminById, controller.show);
 
 router.post("/addNewAdmin", controller.addNewAdmin);
 router.post("/createOwner", controller.createOwner);
-router.post("/login", middleware.getAdminByEmail, controller.login);
+router.post("/login", controller.login);
 // router.post("/signout", middleware.getAdminByEmail, controller.signout);
 
 router.put(

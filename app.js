@@ -11,10 +11,16 @@ const conn = mongoose.connection;
 conn.once("open", () => console.log(`Database Connected Successfully`));
 conn.on("error", (err) => console.log("connection failed", err.message));
 
+const corsOptions = {
+  credentials: true,
+  exposedHeaders: ["Authorization"],
+  allowedHeaders: ["Authorization", "Content-Type"],
+  methods: ["PUT", "POST", "GET", "DELETE", "OPTIONS"],
+};
 // middlewares
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
 
 //routing
 app.use("/admins", require("./routes/admins.routes"));

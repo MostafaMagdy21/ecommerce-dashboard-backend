@@ -87,40 +87,6 @@ async function showMod(req, res) {
         updatedAt: singleOrder.updatedAt,
       },
     });
-    //   {
-    // results: {
-    // 	_id: 671023dd9911a947a87840b2,
-    //     cart: 670e7bcb2f9eae52589c1b03,
-    //     shipping: 670e789a2f9eae52589c1ac8,
-    //     status: under testing,
-    //     products: [
-    //         {
-    //             productId: 670e6b1c101e1c797c96f8da,
-    //             quantity: 3,
-    //             price: 18.99,
-    //             total: 56.97,
-    //             _id: 671023dd9911a947a87840b3
-    //         },
-    //         {
-    //             productId: 670e6ef17e3fbf1fe7eaff66,
-    //             quantity: 3,
-    //             price: 17.99,
-    //             total: 53.97,
-    //             _id: 671023dd9911a947a87840b4
-    //         }
-    //     ],
-    //     userId: {
-    //         _id: 670e72f233e7f5b54dabbaa6,
-    //         fname: Michael,
-    //         lname: Brown,
-    //         email: michaelbrown@example.com,
-    //         phone: +1234567892
-    //     },
-    //     totalPrice: 50,
-    //     createdAt: 2024-10-16T20:36:45.480Z,
-    //     updatedAt:
-    // },
-    //   },
   } catch (err) {
     res.status(500).json({
       message: "Server Error",
@@ -269,19 +235,71 @@ async function storeMod(req, res) {
   }
 }
 
+//* original
+// async function getOrdersByUser(req, res) {
+//   const { id } = req.params;
+//   try {
+//     if (!mongoose.Types.ObjectId.isValid(id)) {
+//       return res.status(400).json({ message: "Invalid user ID" });
+//     }
+//     const allOrders = await Orders.find({}).populate("cart");
+//     const userOrders = allOrders.find((order) => {
+//       return order.cart.userId == id;
+//     });
+//     res.status(200).json({
+//       userOrders,
+//     });
+//   } catch (err) {
+//     res.status(500).json({
+//       message: "Server Error",
+//       error_message: err.message,
+//     });
+//   }
+// }
+
 async function getOrdersByUser(req, res) {
   const { id } = req.params;
   try {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid user ID" });
     }
-    const allOrders = await Orders.find({}).populate("cart");
-    const userOrders = allOrders.find((order) => {
-      return order.cart.userId == id;
-    });
-    res.status(200).json({
-      userOrders,
-    });
+    Orders.find({ userId: id })
+      .populate("shipping", "place")
+      .then((orders) => {
+        if (orders.length > 0) {
+          res.status(200).json({
+            method: "GET",
+            url: `http://localhost:5000/orders/users/${id}`,
+            results: orders.map((order) => {
+              return {
+                id: order._id,
+                cart: order.cart,
+                status: order.status,
+                products: order.products,
+                totalPrice: order.totalPrice,
+                city: order.shipping.place,
+                createdAt: order.createdAt,
+              };
+            }),
+          });
+        } else {
+          return res.status(404).json({
+            method: "GET",
+            url: `http://localhost:5000/orders/`,
+            body: {
+              message: "No Orders Yet...",
+            },
+          });
+        }
+      });
+    // const userOrders = allOrders.find({}).then((results) => {
+    //   res.json({
+    //     results: results,
+    //   });
+    // });
+    // res.status(200).json({
+    //   userOrders,
+    // });
   } catch (err) {
     res.status(500).json({
       message: "Server Error",

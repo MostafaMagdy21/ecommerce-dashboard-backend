@@ -242,6 +242,12 @@ async function login(req, res) {
   const { email, password } = req.body;
   const admin = await Admin.findOne({ email: email });
 
+  if (!admin) {
+    return res.status(400).json({
+      message: "Wrong email or password",
+    });
+  }
+
   if (admin.accountStatus == "deleted") {
     return res.status(403).json({
       message: "Forbidden access... your account is deleted",
@@ -255,7 +261,6 @@ async function login(req, res) {
             { adminId: admin._id, role: admin.role },
             process.env.AUTH_SECRET
           );
-          res.header("Authorization", `Bearer ${token}`);
 
           Admin.updateOne(
             { _id: admin._id },
@@ -268,8 +273,9 @@ async function login(req, res) {
             });
           });
 
-          return res.status(200).json({
-            message: `Welcome back ${admin.name}!`,
+          res.header("Authorization", `Bearer ${token}`);
+          res.status(200).json({
+            message: `Welcome Back ${admin.name}!`,
           });
         } else {
           return res.status(400).json({
