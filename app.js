@@ -1,7 +1,5 @@
 require("dotenv").config();
 const express = require("express");
-const multer = require('multer');
-const path = require("path")
 const app = express();
 const cartRoutes = require("./routes/carts.routes");
 const mongoose = require("mongoose");
@@ -13,11 +11,15 @@ const conn = mongoose.connection;
 conn.once("open", () => console.log(`Database Connected Successfully`));
 conn.on("error", (err) => console.log("connection failed", err.message));
 
+const corsOptions = {
+  credentials: true,
+  exposedHeaders: ["Authorization"],
+  allowedHeaders: ["Authorization", "Content-Type"],
+  methods: ["PUT", "POST", "GET", "DELETE", "OPTIONS"],
+};
 // middlewares
 app.use(express.json());
-app.use(cors());
-
-
+app.use(cors(corsOptions));
 
 //routing
 app.use("/admins", require("./routes/admins.routes"));
