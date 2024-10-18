@@ -4,7 +4,7 @@ const app = express();
 const cartRoutes = require("./routes/carts.routes");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
+const path =require("path");
 //database connection
 mongoose.connect(process.env.DB_ONLINE);
 const conn = mongoose.connection;
@@ -12,6 +12,7 @@ conn.once("open", () => console.log(`Database Connected Successfully`));
 conn.on("error", (err) => console.log("connection failed", err.message));
 
 // middlewares
+app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(express.json());
 app.use(cors());
 
