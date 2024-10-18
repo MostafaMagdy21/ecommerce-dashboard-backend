@@ -1,9 +1,8 @@
 const Product = require("../models/product");
 const mongoose = require("mongoose");
 
-
 function store(req, res) {
-  const imagePaths = req.files.map(file => file.path); // get paths of all uploaded images
+  const imagePaths = req.files.map((file) => file.path); // get paths of all uploaded images
   const product = new Product({
     images: imagePaths,
     sku: req.body.sku,
@@ -55,7 +54,7 @@ function update(req, res) {
       discount: req.body.discount,
     },
     description: req.body.description,
-    images: req.files ? req.files.map(file => file.path) : undefined, // Handle multiple images
+    images: req.files ? req.files.map((file) => file.path) : undefined, // Handle multiple images
     categoryId: req.body.categoryId || null,
     quantity: req.body.quantity,
     options: {
@@ -71,7 +70,7 @@ function update(req, res) {
 
   Product.findByIdAndUpdate(id, updatedData, { new: true })
     .then((product) => {
-      if (product.length===0) {
+      if (product.length === 0) {
         return res.status(404).json({
           message: "Product Not Found",
         });
@@ -92,12 +91,11 @@ function update(req, res) {
     });
 }
 
-
 function show(req, res) {
   const id = req.params.id;
   Product.findById(id)
     .then((product) => {
-      if (product.length===0) {
+      if (product.length === 0) {
         return res.status(404).json({
           message: "Product Not Found",
         });
@@ -120,9 +118,9 @@ function show(req, res) {
 
 function index(req, res) {
   Product.find({})
-    .select('title _id images price rating')
+    // .select('title _id images price rating')
     .then((products) => {
-      if (products.length===0) {
+      if (products.length === 0) {
         res.status(404).json({
           message: "No Products Yet",
           method: "GET",
@@ -134,7 +132,17 @@ function index(req, res) {
           method: "GET",
           url: "http://localhost:5000/products",
           statusCode: "200",
-          products: products,
+          products: products.map((product) => {
+            return {
+              id: product._id,
+              title: product.title,
+              basePrice: product.price.base,
+              discountPercentage: product.price.discount,
+              createdAt: product.createdAt,
+              rating: product.rating,
+              quantity: product.quantity,
+            };
+          }),
         });
       }
     })
@@ -148,7 +156,7 @@ function destroy(req, res) {
 
   Product.findByIdAndDelete(id)
     .then((result) => {
-      if (result.length===0) {
+      if (result.length === 0) {
         return res.status(404).json({
           message: "Product Not Found",
         });
