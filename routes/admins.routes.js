@@ -21,9 +21,9 @@ router.put(
 );
 
 router.put(
-  "/changePassword/:id",
+  "/changePassword",
   authenticateAdminToken,
-  middleware.getAdminById,
+  // middleware.getAdminById,
   controller.changePassword
 );
 
