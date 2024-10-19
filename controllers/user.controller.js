@@ -146,11 +146,21 @@ function updateData(req, res) {
 
 function setStatusToBanned(req, res) {
   if (res.adminId) {
-    User.updateOne(res.user, { accountStatus: "banned" }).then(() => {
-      return res.status(200).json({
-        message: "User account status set to banned successfully",
+    if (res.user.accountStatus == "active") {
+      User.updateOne(res.user, { accountStatus: "banned" }).then(() => {
+        // index(req, res);
+        return res.status(200).json({
+          message: "User account status set to banned successfully",
+        });
       });
-    });
+    } else if (res.user.accountStatus == "banned") {
+      User.updateOne(res.user, { accountStatus: "active" }).then(() => {
+        // index(req, res);
+        return res.status(200).json({
+          message: "User account status set to banned successfully",
+        });
+      });
+    }
   } else {
     return res.status(403).json({
       message: "You're not authorized to make this change!",
