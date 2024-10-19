@@ -7,7 +7,9 @@ const jwt = require("jsonwebtoken");
 function index(req, res) {
   // if (res.role == "owner") {
   Admin.find({})
-    .select("name email role")
+    .select(
+      "name email role accountStatus createdAt updatedAt lastLoginDate _id"
+    )
     .then((admins) => {
       if (admins.length > 0) {
         return res.status(200).json({
@@ -61,8 +63,12 @@ function show(req, res) {
 }
 
 function addNewAdmin(req, res) {
-  // if (res.role=="owner") {
+  // if (res.role == "owner") {
   const { email, password, name } = req.body;
+  console.log(req.body);
+  console.log("name: ", name);
+  console.log("email: ", email);
+  console.log("password: ", password);
 
   if (!password || !email || !name) {
     return res.status(400).json({
@@ -181,54 +187,20 @@ function updateData(req, res) {
 }
 
 function setStatusToDeleted(req, res) {
-  // if (res.role == "owner") {
-  Admin.updateOne(res.admin, { accountStatus: "deleted" }).then(() => {
-    return res.status(200).json({
-      message: "Admin account status set to deleted successfully",
-    });
-  });
-  // } else {
-  //   return res.status(403).json({
-  //     message: "You're not authorized to make this change!",
-  //     method: req.method,
-  //     url: req.originalUrl,
-  //   });
-  // }
-}
-
-async function changePassword(req, res) {
-  if (res.admin._id == res.adminId) {
-    const { oldPassword, newPassword } = req.body;
-    const adminPassword = await Admin.findOne(res.admin._id).then(
-      (admin) => admin.password
-    );
-
-    bcrypt
-      .compare(oldPassword, adminPassword)
-      .then((isIdentical) => {
-        if (isIdentical) {
-          const hashedPassword = bcrypt.hashSync(newPassword, 10);
-          Admin.updateOne(
-            { _id: res.admin._id },
-            { password: hashedPassword }
-          ).then(() => {
-            res.status(201).json({
-              message: "Password updated successfully!",
-            });
-          });
-        } else {
-          res.status(400).json({
-            message: "Your old password is incorrect!",
-          });
-        }
-      })
-      .catch((err) => {
-        return res.status(400).json({
-          message: "please provide the old and the new password!",
-          errorCode: err.code,
-          errorMessage: err.message,
+  if (res.role == "owner") {
+    if (res.admin.accountStatus == "active") {
+      Admin.updateOne(res.admin, { accountStatus: "deleted" }).then(() => {
+        return res.status(200).json({
+          message: "Admin account status set to deleted successfully",
         });
       });
+    } else {
+      Admin.updateOne(res.admin, { accountStatus: "active" }).then(() => {
+        return res.status(200).json({
+          message: "Admin account status set to deleted successfully",
+        });
+      });
+    }
   } else {
     return res.status(403).json({
       message: "You're not authorized to make this change!",
@@ -236,6 +208,48 @@ async function changePassword(req, res) {
       url: req.originalUrl,
     });
   }
+}
+
+async function changePassword(req, res) {
+  // if (res.admin._id == res.adminId) {
+  const { oldPassword, newPassword } = req.body;
+  const adminPassword = await Admin.findOne({ _id: res.adminId }).then(
+    (admin) => admin.password
+  );
+
+  bcrypt
+    .compare(oldPassword, adminPassword)
+    .then((isIdentical) => {
+      if (isIdentical) {
+        const hashedPassword = bcrypt.hashSync(newPassword, 10);
+        Admin.updateOne(
+          { _id: res.adminId },
+          { password: hashedPassword }
+        ).then(() => {
+          res.status(201).json({
+            message: "Password updated successfully!",
+          });
+        });
+      } else {
+        res.status(400).json({
+          message: "Your old password is incorrect!",
+        });
+      }
+    })
+    .catch((err) => {
+      return res.status(400).json({
+        message: "please provide the old and the new password!",
+        errorCode: err.code,
+        errorMessage: err.message,
+      });
+    });
+  // } else {
+  //   return res.status(403).json({
+  //     message: "You're not authorized to make this change!",
+  //     method: req.method,
+  //     url: req.originalUrl,
+  //   });
+  // }
 }
 
 async function login(req, res) {
