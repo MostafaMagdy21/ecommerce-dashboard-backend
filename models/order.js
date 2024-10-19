@@ -9,7 +9,7 @@ const order = new Schema(
       ref: "ShippingCost",
       required: true,
     },
-    status: { type: String, default: "under testing" },
+    status: { type: String, default: "Under testing" },
     products: [
       {
         productId: {

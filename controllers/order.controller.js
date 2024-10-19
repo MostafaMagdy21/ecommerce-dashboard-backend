@@ -8,7 +8,8 @@ async function indexMod(req, res) {
     const allOrders = await Orders.find({}).populate(
       "userId",
       "_id fname lname email phone"
-    );
+    ).populate("shipping", "place _id");
+
     if (allOrders.length) {
       res.status(200).json({
         method: "GET",
@@ -25,6 +26,9 @@ async function indexMod(req, res) {
             totalPrice: order.totalPrice,
             createdAt: order.createdAt,
             updatedAt: order.updatedAt,
+            userEmail: order.userId.email,
+            shippingCity: order.shipping.place
+          
           };
         }),
       });
