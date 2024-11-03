@@ -3,19 +3,19 @@ const mongoose = require("mongoose");
 
 // Get all coupon codes with pagination
 async function index(req, res) {
-  const { page = 1, limit = 10 } = req.query;
+  // const { page = 1, limit = 10 } = req.query;
 
   try {
-    const couponCodes = await CouponCode.find()
-      .limit(limit)
-      .skip((page - 1) * limit);
+    const couponCodes = await CouponCode.find();
+    // .limit(limit)
+    // .skip((page - 1) * limit);
 
     const totalItems = await CouponCode.countDocuments();
 
     res.status(200).json({
       totalItems,
-      totalPages: Math.ceil(totalItems / limit),
-      currentPage: page,
+      // totalPages: Math.ceil(totalItems / limit),
+      // currentPage: page,
       couponCodes,
     });
   } catch (error) {
